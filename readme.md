@@ -11,7 +11,8 @@ It comes with a command line interface that you can use with [Deno][] 🦕:
 
 I have hooked it into [espanso][] to make it available anywhere (see my configuration at the bottom of this readme).
 
-
+   [Deno]: https://deno.land/
+   [espanso]: espanso.org/
 
 ```
     $ deno install https://raw.githubusercontent.com/einarmagnus/unicode-style/master/ustyle.ts
