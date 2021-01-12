@@ -1,7 +1,8 @@
 import { allTextStyles, TextStyle } from "./code-points.ts";
 
 /** ordered in the order they always appears in compounds */
-const styleElements = [
+export const styleElements = [
+  "ascii",
   "sans-serif",
   "bold",
   "italic",
@@ -14,6 +15,7 @@ const styleElements = [
 type Style = typeof styleElements[number];
 
 const styleShortOptions: Record<string, Style> = {
+  "a": "ascii",
   "b": "bold",
   "i": "italic",
   "c": "script",

@@ -14,7 +14,7 @@ type Alphabet = { [index: string]: string };
 
 // Just my personal opinion of what goes together.
 const numberStyleForTextStyle: Record<TextStyle, NumberStyle> = {
-  //    "ASCII": "ASCII",
+  "ASCII": "ASCII",
   "BOLD": "BOLD",
   "ITALIC": "SANS-SERIF",
   "BOLD ITALIC": "BOLD",
