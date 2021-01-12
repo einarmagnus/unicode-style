@@ -1,5 +1,11 @@
 import { Command } from "https://deno.land/x/cliffy@v0.16.0/command/mod.ts";
-import { allTextStyles, style, TextStyle, unstyle } from "./mod.ts";
+import {
+  allTextStyles,
+  parseTemplate,
+  style,
+  TextStyle,
+  unstyle,
+} from "./mod.ts";
 import * as Colors from "https://deno.land/std@0.74.0/fmt/colors.ts";
 import { flagsToStyle } from "./flags-to-styles.ts";
 
@@ -26,8 +32,11 @@ export async function main() {
     let template = getFlagArg("--template");
     if (template === "-") {
       template = new TextDecoder().decode(await Deno.readAll(Deno.stdin));
+    } else if (!template) {
+      console.log("Error: --template requires an argument");
+      return;
     }
-    console.log("template is not implemented yet :/");
+    console.log(parseTemplate(template));
   } else {
     let index = 0;
     const output: string[] = [];
@@ -41,7 +50,7 @@ export async function main() {
         output.push(style(text, styleName));
       } catch (msg) {
         console.log("Error", msg);
-        Deno.exit();
+        return;
       }
     } while (index < Deno.args.length);
     console.log(output.join(""));
