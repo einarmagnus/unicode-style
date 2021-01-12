@@ -1,9 +1,30 @@
-export const allTextStyles = ["BOLD" , "DOUBLE-STRUCK" , "SANS-SERIF" , "SANS-SERIF BOLD" , "MONOSPACE" , "ITALIC" , "BOLD ITALIC" , "SCRIPT" , "BOLD SCRIPT" , "FRAKTUR"  , "BOLD FRAKTUR" , "SANS-SERIF ITALIC" , "SANS-SERIF BOLD ITALIC"] as const;
-export type NumberStyle =  /*"ASCII" |*/ "BOLD" | "DOUBLE-STRUCK" | "SANS-SERIF" | "SANS-SERIF BOLD" | "MONOSPACE";
+export const allTextStyles = [
+    "BOLD",
+    "DOUBLE-STRUCK",
+    "SANS-SERIF",
+    "SANS-SERIF BOLD",
+    "MONOSPACE",
+    "ITALIC",
+    "BOLD ITALIC",
+    "SCRIPT",
+    "BOLD SCRIPT",
+    "FRAKTUR" ,
+    "BOLD FRAKTUR",
+    "SANS-SERIF ITALIC",
+    "SANS-SERIF BOLD ITALIC"
+] as const;
+
+export type NumberStyle =  /*"ASCII" |*/
+      "BOLD"
+    | "DOUBLE-STRUCK"
+    | "SANS-SERIF"
+    | "SANS-SERIF BOLD"
+    | "MONOSPACE";
+
 export type TextStyle = typeof allTextStyles[number];
 export type RowType = [string, string, TextStyle, "CAPITAL" | "SMALL" | "DIGIT", string, string];
-// see https://en.wikipedia.org/wiki/Mathematical_Alphanumeric_Symbols
 
+// see https://en.wikipedia.org/wiki/Mathematical_Alphanumeric_Symbols
 export const numbers: RowType[] = [
     // ["U+0030", "ASCII NUMBER", "ASCII", "DIGIT", "0", "0"],
     // ["U+0031", "ASCII NUMBER", "ASCII", "DIGIT", "1", "1"],
