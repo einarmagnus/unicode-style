@@ -112,6 +112,7 @@ TODO:
 - [ ] more flexibility around which number style to pick
 - [x] improve readme
 - [ ] jsdoc
+- [x] make template resistant to illegal styles
 - [x] make cli more flexible in terms of --bold --italic
 
 ## Espanso

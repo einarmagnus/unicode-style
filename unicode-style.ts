@@ -109,6 +109,11 @@ const flagsToStyle = (flags: string) =>
 export function parseTemplate(template: string) {
   return template.replace(
     literalRegex,
-    (_, flags, text) => style(text, flagsToStyle(flags)),
-  );
+    (all, flags, text) => {
+        try {
+            return style(text, flagsToStyle(flags));
+        } catch (e) {
+            return all;
+        }
+    });
 }
