@@ -1,6 +1,7 @@
 import { Command } from "https://deno.land/x/cliffy@v0.16.0/command/mod.ts";
 import { allTextStyles, style, TextStyle, unstyle } from "./mod.ts";
 import * as Colors from "https://deno.land/std@0.74.0/fmt/colors.ts";
+import { flagsToStyle } from "./flags-to-styles.ts";
 
 export async function main() {
   const equals = (a: string) => (b: string) => a === b;
@@ -36,7 +37,7 @@ export async function main() {
       index += styleFlags.length + 1;
       let styleName: TextStyle;
       try {
-        styleName = optionsToStyle(styleFlags);
+        styleName = flagsToStyle(styleFlags);
         output.push(style(text, styleName));
       } catch (msg) {
         console.log("Error", msg);
@@ -44,73 +45,6 @@ export async function main() {
       }
     } while (index < Deno.args.length);
     console.log(output.join(""));
-  }
-}
-
-/** ordered in the order they always appears in compounds */
-const styleElements = [
-  "sans-serif",
-  "bold",
-  "italic",
-  "fraktur",
-  "monospace",
-  "script",
-  "double-struck",
-] as const;
-
-type Style = typeof styleElements[number];
-
-const styleShortOptions: Record<string, Style> = {
-  "b": "bold",
-  "i": "italic",
-  "c": "script",
-  "f": "fraktur",
-  "d": "double-struck",
-  "s": "sans-serif",
-  "m": "monospace",
-};
-
-function optionsToStyle(opts: string[]): TextStyle {
-  const styles: Style[] = [];
-  for (const opt of opts) {
-    if (opt.startsWith("--")) {
-      styles.push(validateLongOption(opt));
-    } else {
-      styles.push(...translateShortOptions(opt));
-    }
-  }
-  return getStyle(styles);
-}
-
-function validateLongOption(opt: string) {
-  const name = opt.substr(2);
-  if ((<readonly string[]> styleElements).includes(name)) {
-    return name as Style;
-  } else {
-    throw `'${opt}' is not a valid style`;
-  }
-}
-function translateShortOptions(opts: string): Style[] {
-  const styles: Style[] = [];
-  for (const opt of opts.substr(1)) {
-    if (styleShortOptions[opt]) {
-      styles.push(styleShortOptions[opt]);
-    } else {
-      throw `${opt} is not a valid option (found in ${opts})`;
-    }
-  }
-  return styles;
-}
-
-function getStyle(styles: Style[]): TextStyle {
-  styles.sort((el1, el2) =>
-    styleElements.indexOf(el1) - styleElements.indexOf(el2)
-  );
-  const styleName = styles.join(" ").toUpperCase();
-  if (allTextStyles.includes(<TextStyle> styleName)) {
-    return styleName as TextStyle;
-  } else {
-    throw `There is no ${styleName} available in unicode`;
   }
 }
 
