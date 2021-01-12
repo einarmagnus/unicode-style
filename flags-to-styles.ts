@@ -34,7 +34,7 @@ export function flagsToStyle(opts: string[]): TextStyle {
       styles.push(...translateShortFlags(opt.substr(1)));
     }
   }
-  return composeStyle(styles);
+  return composeStyles(styles);
 }
 
 export function validateLongFlag(opt: string) {
@@ -56,7 +56,7 @@ export function translateShortFlags(opts: string): Style[] {
   return styles;
 }
 
-export function composeStyle(styles: Style[]): TextStyle {
+export function composeStyles(styles: Style[]): TextStyle {
   styles.sort((el1, el2) =>
     styleElements.indexOf(el1) - styleElements.indexOf(el2)
   );

@@ -6,9 +6,9 @@ import {
   RowType,
   TextStyle,
 } from "./code-points.ts";
-import { composeStyle, translateShortFlags } from "./flags-to-styles.ts";
+import { composeStyles, translateShortFlags } from "./flags-to-styles.ts";
 export type { NumberStyle, TextStyle };
-export { allTextStyles };
+export { allTextStyles, composeStyles, translateShortFlags };
 
 type Alphabet = { [index: string]: string };
 
@@ -104,7 +104,7 @@ export function style(text: string, style: TextStyle): string {
 
 const literalRegex = /{([bicsfdm]+) ([^}]*)}/g;
 const flagsToStyle = (flags: string) =>
-  composeStyle(translateShortFlags(flags));
+  composeStyles(translateShortFlags(flags));
 /** Use the syntax of chalk */
 export function parseTemplate(template: string) {
   return template.replace(
