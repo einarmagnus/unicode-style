@@ -106,8 +106,11 @@ function printUsage() {
             The first letters before a space will be used to pick the style of the rest
             of the text in there. Those style letters are interpreted the same way as
             the short options above.
+            If the argument given to --template is -, then the template will be read from stdin
             {Example:}
                 $ ustyle --template "Sir {f Galahad} sat by the {bi round} table"
+                ${parseTemplate("Sir {f Galahad} sat by the {bi round} table")}
+                $ echo "Sir {f Galahad} sat by the {bi round} table" | ustyle --template -
                 ${parseTemplate("Sir {f Galahad} sat by the {bi round} table")}
 
 
