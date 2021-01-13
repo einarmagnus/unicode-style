@@ -1,4 +1,5 @@
 import {TextStyle, allTextStyles, alphabets} from "./alphabets.ts";
+import { decompositionMap } from "./compositions.ts";
 import { composeStyles, translateShortFlags } from "./flags-to-styles.ts";
 export type { TextStyle };
 export { allTextStyles, composeStyles, translateShortFlags };
@@ -20,7 +21,7 @@ function makeCharMap(alphabets: Record<TextStyle, string>): Map<TextStyle, Alpha
   return styles;
 }
 
-const charMap = makeCharMap(alphabets);
+export const styleCharMap: Map<TextStyle, Alphabet> = makeCharMap(alphabets);
 
 // adapted from https://coolaj86.com/articles/how-to-count-unicode-characters-in-javascript/
 export function unicodeSplit(str: string): string[] {
@@ -50,9 +51,11 @@ export function unstyle(text: string) {
   }
   return result.join("");
 }
+const decomposeChars = (text: string) => text.replace(/./g, ch => decompositionMap[ch] || ch);
 
 export function style(text: string, style: TextStyle): string {
-  const alphabet = charMap.get(style);
+  text = decomposeChars(text);
+  const alphabet = styleCharMap.get(style);
   if (!alphabet) {
     throw new Error(`No style '${style}' found`);
   }
@@ -62,7 +65,7 @@ export function style(text: string, style: TextStyle): string {
     result.push(alphabet[char] || char);
   }
   const r = result.join("");
-  return r;
+  return r.normalize();
 }
 
 const literalRegex = /{([bicsfdm]+) ([^}]*)}/g;
