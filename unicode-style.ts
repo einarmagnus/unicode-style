@@ -1,63 +1,26 @@
-import {
-  allTextStyles,
-  letters,
-  numbers,
-  NumberStyle,
-  RowType,
-  TextStyle,
-} from "./code-points.ts";
+import {TextStyle, allTextStyles, alphabets} from "./alphabets.ts";
 import { composeStyles, translateShortFlags } from "./flags-to-styles.ts";
-export type { NumberStyle, TextStyle };
+export type { TextStyle };
 export { allTextStyles, composeStyles, translateShortFlags };
 
 type Alphabet = { [index: string]: string };
-
-// Just my personal opinion of what goes together.
-const numberStyleForTextStyle: Record<TextStyle, NumberStyle> = {
-  "ASCII": "ASCII",
-  "BOLD": "BOLD",
-  "ITALIC": "SANS-SERIF",
-  "BOLD ITALIC": "BOLD",
-  "SCRIPT": "SANS-SERIF",
-  "BOLD SCRIPT": "BOLD",
-  "FRAKTUR": "DOUBLE-STRUCK",
-  "DOUBLE-STRUCK": "DOUBLE-STRUCK",
-  "BOLD FRAKTUR": "BOLD",
-  "SANS-SERIF": "SANS-SERIF",
-  "SANS-SERIF BOLD": "SANS-SERIF BOLD",
-  "SANS-SERIF ITALIC": "SANS-SERIF",
-  "SANS-SERIF BOLD ITALIC": "SANS-SERIF BOLD",
-  "MONOSPACE": "MONOSPACE",
-};
-
 const erasor: Alphabet = {};
-letters.forEach(([code, name, style, type, plain, styled]) => {
-  erasor[styled] = plain;
-});
-numbers.forEach(([code, name, style, type, plain, styled]) => {
-  erasor[styled] = plain;
-});
 
-function makeAlphabets(letters: RowType[]): Map<TextStyle, Alphabet> {
+function makeCharMap(alphabets: Record<TextStyle, string>): Map<TextStyle, Alphabet> {
   const styles = new Map<TextStyle, Alphabet>();
-  for (const [code, name, style, type, plain, styled] of letters) {
-    let alphabet = styles.get(style);
-    if (!alphabet) {
-      alphabet = {};
-      styles.set(style, alphabet);
-    }
-    alphabet[plain] = styled;
+  const ascii = alphabets["ASCII"];
+  for (const styleName of allTextStyles) {
+    const alphabet = alphabets[styleName];
+    styles.set(styleName, unicodeSplit(alphabet).reduce((map: Alphabet, char, i)=> {
+        map[ascii[i]] = char;
+        erasor[char] = ascii[i];
+        return map;
+    }, {}));
   }
   return styles;
 }
 
-const alphabets = makeAlphabets(letters);
-const numberbets = makeAlphabets(numbers);
-
-alphabets.forEach((alphabet, textStyle) => {
-  const numberStyle = numberStyleForTextStyle[textStyle];
-  Object.assign(alphabet, numberbets.get(numberStyle));
-});
+const charMap = makeCharMap(alphabets);
 
 // adapted from https://coolaj86.com/articles/how-to-count-unicode-characters-in-javascript/
 export function unicodeSplit(str: string): string[] {
@@ -83,13 +46,13 @@ export function unstyle(text: string) {
   const result: string[] = [];
   const chars = unicodeSplit(text);
   for (const char of chars) {
-    result.push(erasor[char] || char);
+    result.push(erasor[char] ?? char);
   }
   return result.join("");
 }
 
 export function style(text: string, style: TextStyle): string {
-  const alphabet = alphabets.get(style);
+  const alphabet = charMap.get(style);
   if (!alphabet) {
     throw new Error(`No style '${style}' found`);
   }

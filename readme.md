@@ -109,13 +109,17 @@ deno run .\test.ts
 
 
 TODO:
-- [x] make a template literal, inspired by chalk
+- [x] make a template, syntax inspired by chalk
 - [x] cli
 - [ ] more flexibility around which number style to pick
 - [x] improve readme
 - [ ] jsdoc
 - [x] make template resistant to illegal styles
 - [x] make cli more flexible in terms of --bold --italic
+- [x] reduce size and increase speed by restructuring the alphabets
+- [ ] circled letters https://www.compart.com/en/unicode/block/U+2460
+- [ ] Å https://www.compart.com/en/unicode/U+212B
+
 
 ## Espanso
 

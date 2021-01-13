@@ -1,4 +1,4 @@
-import { allTextStyles, TextStyle } from "./code-points.ts";
+import { allTextStyles, TextStyle } from "./alphabets.ts";
 
 /** ordered in the order they always appears in compounds */
 export const styleElements = [
