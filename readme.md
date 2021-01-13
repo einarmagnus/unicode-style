@@ -6,6 +6,7 @@ There are some places where styled text is not available. If Unicode is supporte
 
 There are 13 different styles of text, and 5 different styles of numbers, see https://en.wikipedia.org/wiki/Mathematical_Alphanumeric_Symbols for a list.
 
+I have build a UI around it at <https://einarmagnus.net/pages/ustyle>, try it out.
 
 It comes with a command line interface that you can use with [Deno][] 🦕:
 
