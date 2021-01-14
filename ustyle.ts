@@ -29,6 +29,15 @@ export async function main() {
   } else if (hasFlag("--list")) {
     const example = getFlagArg("--list") ?? "Lorem Ipsum Dolor Sit Amet 1234";
     listStyles(example);
+  } else if (hasFlag("--clean")) {
+    let text = getFlagArg("--clean");
+    if (text === "-") {
+      text = new TextDecoder().decode(await Deno.readAll(Deno.stdin));
+    } else if (!text) {
+      console.log("Error: --clean requires an argument");
+      return;
+    }
+    console.log(unstyle(text));
   } else if (hasFlag("--template")) {
     let template = getFlagArg("--template");
     if (template === "-") {

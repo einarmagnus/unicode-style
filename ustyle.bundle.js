@@ -581,7 +581,7 @@ function makeCharMap(alphabets1) {
     const ascii = alphabets1["ASCII"];
     for (const styleName of allTextStyles2){
         const alphabet = alphabets1[styleName];
-        styles.set(styleName, unicodeSplit(alphabet).reduce((map, __char, i)=>{
+        styles.set(styleName, Array.from(alphabet).reduce((map, __char, i)=>{
             map[ascii[i]] = __char;
             erasor[__char] = ascii[i];
             return map;
@@ -591,32 +591,12 @@ function makeCharMap(alphabets1) {
     return styles;
 }
 export const styleCharMap = makeCharMap(alphabets);
-export function unicodeSplit(str) {
-    var point;
-    var index;
-    var width = 0;
-    var len = 0;
-    var uchars = [];
-    for(index = 0; index < str.length;){
-        point = str.codePointAt(index);
-        uchars.push(String.fromCodePoint(point));
-        width = 0;
-        while(point){
-            width += 1;
-            point = point >> 8;
-        }
-        index += Math.round(width / 2);
-        len += 1;
-    }
-    return uchars;
-}
 export function unstyle(text) {
     const result = [];
-    const chars = unicodeSplit(text);
-    for (const __char of chars){
+    for (const __char of text){
         result.push(erasor[__char] ?? __char);
     }
-    return result.join("");
+    return result.join("").normalize();
 }
 const decomposeChars = (text)=>text.replace(/./g, (ch)=>decompositionMap[ch] || ch
     )
