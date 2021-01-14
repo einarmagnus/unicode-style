@@ -1,5 +1,6 @@
 import {TextStyle, allTextStyles, alphabets} from "./alphabets.ts";
-import { decomposeChars, decompositionMap } from "./compositions.ts";
+import { composeChars } from "./compositions.ts";
+import { decomposeChars, decompositionMap } from "./decompositions.ts";
 import { composeStyles, translateShortFlags } from "./flags-to-styles.ts";
 export type { TextStyle };
 export { allTextStyles, composeStyles, translateShortFlags };
@@ -31,7 +32,10 @@ export function unstyle(text: string) {
   return result.join("").normalize();
 }
 
+
 export function style(text: string, style: TextStyle): string {
+  //this will be possible in deno 1.7, and it would work on the web.
+  //text = text.normalize("NFD");
   text = decomposeChars(text);
   const alphabet = styleCharMap.get(style);
   if (!alphabet) {
@@ -43,7 +47,9 @@ export function style(text: string, style: TextStyle): string {
     result.push(alphabet[char] || char);
   }
   const r = result.join("");
-  return r.normalize();
+  //this will be possible in deno 1.7, and it would work on the web
+  //return r.normalize();
+  return composeChars(r);
 }
 
 const literalRegex = /{([bicsfdm]+) ([^}]*)}/g;
