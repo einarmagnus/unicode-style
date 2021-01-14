@@ -12,7 +12,7 @@ const allTextStyles2 = [
     "BOLD SCRIPT",
     "FRAKTUR",
     "BOLD FRAKTUR",
-    "DOUBLE-STRUCK",
+    "DOUBLE-STRUCK", 
 ];
 const alphabets = {
     "ASCII": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
@@ -522,6 +522,9 @@ const decompositionMap = {
     "Ỹ": "Ỹ",
     "ỹ": "ỹ"
 };
+const decomposeChars = (text)=>text.replace(/./g, (ch)=>decompositionMap[ch] || ch
+    )
+;
 const styleElements = [
     "ascii",
     "sans-serif",
@@ -530,7 +533,7 @@ const styleElements = [
     "fraktur",
     "monospace",
     "script",
-    "double-struck",
+    "double-struck", 
 ];
 const styleShortOptions = {
     "a": "ascii",
@@ -598,9 +601,6 @@ export function unstyle(text) {
     }
     return result.join("").normalize();
 }
-const decomposeChars = (text)=>text.replace(/./g, (ch)=>decompositionMap[ch] || ch
-    )
-;
 export function style(text, style1) {
     text = decomposeChars(text);
     const alphabet = styleCharMap.get(style1);

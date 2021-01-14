@@ -1,5 +1,5 @@
 import {TextStyle, allTextStyles, alphabets} from "./alphabets.ts";
-import { decompositionMap } from "./compositions.ts";
+import { decomposeChars, decompositionMap } from "./compositions.ts";
 import { composeStyles, translateShortFlags } from "./flags-to-styles.ts";
 export type { TextStyle };
 export { allTextStyles, composeStyles, translateShortFlags };
@@ -30,7 +30,6 @@ export function unstyle(text: string) {
   }
   return result.join("").normalize();
 }
-const decomposeChars = (text: string) => text.replace(/./g, ch => decompositionMap[ch] || ch);
 
 export function style(text: string, style: TextStyle): string {
   text = decomposeChars(text);

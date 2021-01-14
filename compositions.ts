@@ -1,4 +1,4 @@
-export const decompositionMap: { [char: string]: string } = {
+export const decompositionMap: {[char: string]: string} = {
   "À": "À",
   "Á": "Á",
   "Â": "Â",
@@ -490,3 +490,6 @@ export const decompositionMap: { [char: string]: string } = {
   "Ỹ": "Ỹ",
   "ỹ": "ỹ",
 };
+
+export const decomposeChars = (text: string) =>
+    text.replace(/./g, ch => decompositionMap[ch] || ch);
