@@ -1,9 +1,12 @@
 import {TextStyle, allTextStyles, alphabets} from "./alphabets.ts";
-import { composeChars } from "./compositions.ts";
+import { monkeyPatchNormalize } from "./normalize.ts";
 import { decomposeChars, decompositionMap } from "./decompositions.ts";
 import { composeStyles, translateShortFlags } from "./flags-to-styles.ts";
 export type { TextStyle };
 export { allTextStyles, composeStyles, translateShortFlags };
+
+// path String.normalize for Deno (only for latin chars)
+monkeyPatchNormalize();
 
 type Alphabet = { [index: string]: string };
 const erasor: Alphabet = {};
@@ -34,9 +37,7 @@ export function unstyle(text: string) {
 
 
 export function style(text: string, style: TextStyle): string {
-  //this will be possible in deno 1.7, and it would work on the web.
-  //text = text.normalize("NFD");
-  text = decomposeChars(text);
+  text = text.normalize("NFD");
   const alphabet = styleCharMap.get(style);
   if (!alphabet) {
     throw new Error(`No style '${style}' found`);
@@ -47,9 +48,7 @@ export function style(text: string, style: TextStyle): string {
     result.push(alphabet[char] || char);
   }
   const r = result.join("");
-  //this will be possible in deno 1.7, and it would work on the web
-  //return r.normalize();
-  return composeChars(r);
+  return r.normalize("NFC");
 }
 
 const literalRegex = /{([bicsfdm]+) ([^}]*)}/g;
