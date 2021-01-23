@@ -1,4 +1,4 @@
-import {decompositionMap, decomposeChars} from "./decompositions.ts";
+import {decompositionMap, decomposeChars} from "./unicode-tools/decompositions.ts";
 
 let min = Infinity, max = 0;
 interface CompositionMap {

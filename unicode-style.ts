@@ -1,6 +1,6 @@
 import {TextStyle, allTextStyles, alphabets} from "./alphabets.ts";
 import { monkeyPatchNormalize } from "./normalize.ts";
-import { decomposeChars, decompositionMap } from "./decompositions.ts";
+import { decomposeChars, decompositionMap } from "./unicode-tools/decompositions.ts";
 import { composeStyles, translateShortFlags } from "./flags-to-styles.ts";
 export type { TextStyle };
 export { allTextStyles, composeStyles, translateShortFlags };
