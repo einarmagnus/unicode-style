@@ -1,4 +1,4 @@
-import { graphemeBreakProp, or } from "./grapheme-break-property.ts";
+import { graphemeBreakProp } from "./grapheme-break-property.ts";
 
 const codePointWidth = (codePoint: number) => {
   return codePoint >= 0x010000 ? 2 : 1;
@@ -56,8 +56,8 @@ const getGraphemeWidth = (str: string, i: number): number => {
     if (inEmojiSeq) {
       if (isZWJ(cur)) {
         // don't break
-      } else if (or(isExtendedPictographic, isExtend)(cur)) {
-        if (!or(isExtend, isZWJ)(next)) {
+      } else if (isExtendedPictographic(cur) || isExtend(cur)) {
+        if (!(isExtend(next) || isZWJ(next))) {
           return width;
         }
       } else {
@@ -75,22 +75,24 @@ const getGraphemeWidth = (str: string, i: number): number => {
       return 1;
     } // http://unicode.org/reports/tr29/#GB6
     // Do not break Hangul syllable sequences.
-    else if (isL(cur) && or(isL, isV, isLV, isLVT)(next)) {
+    else if (
+      isL(cur) && (isL(next) || isV(next) || isLV(next) || isLVT(next))
+    ) {
       // GB6 	L 	× 	(L | V | LV | LVT)
-    } else if (or(isLV, isV)(cur) && or(isV, isT)(next)) {
+    } else if ((isLV(cur) || isV(cur)) && (isV(next) || isT(next))) {
       // GB7 	(LV | V) 	× 	(V | T)
-    } else if (or(isLVT, isT)(cur) && isT(next)) {
+    } else if ((isLVT(cur) || isT(cur)) && isT(next)) {
       // GB8 	(LVT | T) 	× 	T
     } // Do not break within emoji modifier sequences or emoji zwj sequences.
     // need to keep this before GB9
     // GB11 	\p{Extended_Pictographic} Extend* ZWJ 	× 	\p{Extended_Pictographic}
     else if (isExtendedPictographic(cur)) {
-      if (or(isExtend, isZWJ)(next)) {
+      if (isExtend(next) || isZWJ(next)) {
         inEmojiSeq = true;
       } else {
         return width;
       }
-    } else if (or(isZWJ, isExtend)(next)) {
+    } else if (isZWJ(next) || isExtend(next)) {
       // Do not break before extending characters or ZWJ.
       // GB9 	  	× 	(Extend | ZWJ)
     } else if (isSpacingMark(next)) {

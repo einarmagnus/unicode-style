@@ -171,6 +171,19 @@ function showValuesCompact(numbers: number[]) {
 
 const hex = (n: number) => `0x${n.toString(16)}`;
 
+const between = (a: number, b: number) => `(v >= ${hex(a)} && v <= ${hex(b)})`;
+const or = (...preds: string[]) => preds.join(" || ");
+const and = (...preds: string[]) => preds.join(" && ");
+const equalTo = (v: number) => `(v === ${hex(v)})`;
+const inSetOrBlock = (set: Array<number>, blocks: string[]) =>
+  `((s: Set<number>) => (v: number) => ${or(...blocks, "s.has(v)")})(new Set([${
+    set.map(hex).join(", ")
+  }]))`;
+const inSet = (set: Array<number>) =>
+  `((s: Set<number>) => (v: number) => s.has(v))(new Set([${
+    set.map(hex).join(", ")
+  }]))`;
+
 function makeCompactRule(numbers: number[], threshold: number) {
   numbers = numbers.sort((a, b) => a - b);
   const blocks = [];
@@ -178,7 +191,7 @@ function makeCompactRule(numbers: number[], threshold: number) {
   let lastNumber = numbers[0];
   let firstInCluser = numbers[0];
   if (numbers.length === 1) {
-    return `equalTo(${hex(numbers[0])})`;
+    return `(v:number) => ${equalTo(numbers[0])}`;
   }
   for (let i = 1; i <= numbers.length; i++) {
     const n = numbers[i];
@@ -199,18 +212,20 @@ function makeCompactRule(numbers: number[], threshold: number) {
     }
     lastNumber = n;
   }
-  const checkExpr = blocks.map(([from, to]) =>
-    `between(${hex(from)}, ${hex(to)})`
-  );
-  if (rest.length) {
-    checkExpr.push(
-      `inSet(new Set([${Array.from(rest.values()).map(hex).join(", ")}]))`,
-    );
-  }
-  if (checkExpr.length > 1) {
-    return `or(${checkExpr.join(", ")})`;
+  const blockExprs = blocks.map(([from, to]) => between(from, to));
+
+  if (rest.length && blockExprs.length) {
+    if (rest.length === 1) {
+      return or(equalTo(rest[0]), ...blockExprs);
+    }
+    return inSetOrBlock(rest, blockExprs);
+  } else if (rest.length) {
+    if (rest.length === 1) {
+      return `(v:number) => ${equalTo(rest[0])}`;
+    }
+    return inSet(rest);
   } else {
-    return checkExpr[0];
+    return `(v:number) => ${or(...blockExprs)}`;
   }
 }
 
@@ -222,19 +237,6 @@ async function writeGraphemeSupport() {
     "grapheme-break-property.ts",
   );
 
-  await writeLn(`
-  type CodePointPred = (v: number) => boolean;
-  type F<In, Out> = (arg: In) => Out
-  export const between = (a: number, b: number) => (v: number) => v >= a && v <= b;
-  export const equalTo = (a: number) => (v: number) => a === v;
-  export const inSet = (s: Set<number>) => (v: number) => s.has(v);
-  export const or = (...ps: CodePointPred[]) => (v: number) => ps.some(p => p(v));
-  export const and = (...ps: CodePointPred[]) => (v: number) => ps.every(p => p(v));
-  export const not = (p: CodePointPred) => (v: number) => !p(v);
-  export const offset = (o: number) => (v: number) => v - o;
-  export const divisibleBy = (d: number) => (v: number) => v % d === 0;
-  export const chain = <In, Middle, Out>(a: F<In, Middle>, b: F<Middle, Out>) => (v: In) => b(a(v));
-  `);
   await writeLn(`export const graphemeBreakProp = {`);
 
   const hex = (n: number) => `0x${n.toString(16)}`;
@@ -249,21 +251,21 @@ async function writeGraphemeSupport() {
 
     if (prop === "LVT") {
       await writeLn(
-        `  // shorter (and faster?) than the whole table (${values.length} entries)`,
+        `  // shorter (and faster!) than the whole table (${values.length} entries)`,
       );
       await writeLn(
-        `  is${prop}: and(between(${hex(from)}, ${hex(to)}), not(chain(offset(${
-          hex(from)
-        }), divisibleBy(28)))),`,
+        `  is${prop}: (v: number) => ${
+          and(between(from, to), `!((v-${hex(from)}) % 28)`)
+        },`,
       );
     } else if (prop === "LV") {
       await writeLn(
-        `  // shorter (and faster?) than the whole table (${values.length} entries)`,
+        `  // shorter (and faster!) than the whole table (${values.length} entries)`,
       );
       await writeLn(
-        `  is${prop}: and(between(${hex(from)}, ${hex(to)}), chain(offset(${
-          hex(from)
-        }), divisibleBy(28))),`,
+        `  is${prop}: (v: number) => ${
+          and(between(from, to), `((v-${hex(from)}) % 28)`)
+        },`,
       );
     } else {
       const threshold = bigThresholds.includes(prop) ? 100 : 20;
