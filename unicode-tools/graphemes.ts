@@ -189,19 +189,19 @@ export function substring(string: string, start?: number, end?: number) {
     [safeStart, safeEnd] = [safeEnd, safeStart];
   }
 
-  const substr = [];
+  const length = safeEnd - safeStart;
+  const substr = Array(length);
   const itr = iterateGraphemes(string);
-  let length = safeEnd - safeStart;
   while (safeStart--) {
     const { done, value } = itr.next();
     if (done) {
       return "";
     }
   }
-  while (length--) {
+  for (let i = 0; i < length; i++) {
     const { done, value } = itr.next();
     if (done) break;
-    substr.push(value);
+    substr[i] = value;
   }
   itr.return();
   return substr.join("");
