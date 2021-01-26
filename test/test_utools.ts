@@ -9,7 +9,7 @@ const U = (ch: string) => ch.codePointAt(0)?.toString(16);
 Deno.test("runes", () => {
     const splitRunes = (str: string) => Array.from(iterateGraphemes(str));
 
-    T.assertEquals(splitRunes("abcd"), ["a", "b", "c", "d"]);
+    T.assertEquals(splitRunes("abcd\u1100\u1161"), ["a", "b", "c", "d", "\u1100\u1161"]);
     T.assertEquals(splitRunes("👩🏻‍🤝‍🧑🏻👩🏿‍🤝‍👩🏻👩🏾‍🤝‍👩🏻👩🏽‍🤝‍🧑🏿"), ["👩🏻‍🤝‍🧑🏻", "👩🏿‍🤝‍👩🏻", "👩🏾‍🤝‍👩🏻", "👩🏽‍🤝‍🧑🏿"]);
     T.assertEquals(splitRunes(""), []);
     T.assertEquals(splitRunes("hej ❤️ 𝐛a\u0308 👩🏿‍🤝‍👩🏻"), ["h", "e", "j", " ", "❤️", " ", "𝐛", "a\u0308", " ", "👩🏿‍🤝‍👩🏻"]);

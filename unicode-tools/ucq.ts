@@ -21,14 +21,14 @@ async function list(
   return (await ucd()).map(name).filter(includeRow);
 }
 
-function filePath(fileName: string) {
+function inSourceDir(fileName: string) {
   return fromFileUrl(join(dirname(import.meta.url), fileName));
 }
 
 const FileWriter = async (fileName: string) => {
   const encoder = new TextEncoder();
   const openFile = await Deno.open(
-    filePath(fileName),
+    fileName,
     { write: true, create: true, truncate: true },
   );
 
@@ -84,7 +84,7 @@ const categories = {
 };
 
 //http://www.unicode.org/Public/5.1.0/ucd/UCD.html#UnicodeData.txt
-const names = [
+const fieldNames = [
   "code",
   "name",
   "category", //https://www.unicode.org/Public/5.1.0/ucd/UCD.html#General_Category_Values
@@ -101,16 +101,16 @@ const names = [
   "simpleLowercase", //https://www.unicode.org/Public/5.1.0/ucd/UCD.html#Case_Mappings
   "simpleTitlecase", //https://www.unicode.org/Public/5.1.0/ucd/UCD.html#Case_Mappings
 ] as const;
-type Names = typeof names[number];
+type Names = typeof fieldNames[number];
 function name(row: string[]): Record<Names, string> {
   return row.reduce((acc, value, index) => {
-    acc[names[index]] = value;
+    acc[fieldNames[index]] = value;
     return acc;
   }, {} as Record<Names, string>);
 }
 async function ucd() {
   if (!_ucd) {
-    const unicodeFile = filePath("UnicodeData.txt");
+    const unicodeFile = inSourceDir("UnicodeData.txt");
     let fileData: string;
     try {
       fileData = await Deno.readTextFile(unicodeFile);
@@ -125,7 +125,7 @@ async function ucd() {
 }
 
 async function parsePropertyFile(fileName: string) {
-  const fileData = await Deno.readTextFile(filePath(fileName));
+  const fileData = await Deno.readTextFile(inSourceDir(fileName));
 
   return fileData.split(/\r?\n/).filter((line) => !/^\s*(#.*)?$/.test(line) // remove comments and empty lines
   ).map((line) =>
@@ -175,17 +175,23 @@ const between = (a: number, b: number) => `(v >= ${hex(a)} && v <= ${hex(b)})`;
 const or = (...preds: string[]) => preds.join(" || ");
 const and = (...preds: string[]) => preds.join(" && ");
 const equalTo = (v: number) => `(v === ${hex(v)})`;
-const inSetOrBlock = (set: Array<number>, blocks: string[]) =>
-  `((s: Set<number>) => (v: number) => ${or(...blocks, "s.has(v)")})(new Set([${
-    set.map(hex).join(", ")
-  }]))`;
-const inSet = (set: Array<number>) =>
-  `((s: Set<number>) => (v: number) => s.has(v))(new Set([${
-    set.map(hex).join(", ")
-  }]))`;
 
+/**
+ * Code to compress the unicode property data.
+ * All the code points for a particular property will be encoded into a string that
+ * looks like this:
+ * ((s: Set<number>) => (v: number) => s.has(v))(strToSet("ace", "gikp"))
+ * This to conserve space in the generated source file.
+ * It is a function that takes a set and returns a function that takes a number
+ * that gives a boolean. It is then given a set constructed from the encoded strings.
+ * The strings in the example will give a set that has the code points for
+ * "a", "c", "e", and "g", "h", "i", and "k" "l" "m" "n" "o" "p",
+ * i.e the first string is a list of characters, and the second a list of character ranges.
+ * This made the source file be 5kiB instead of 23kiB.
+ */
 function makeCompactRule(numbers: number[], threshold: number) {
   numbers = numbers.sort((a, b) => a - b);
+  const bigblocks = [];
   const blocks = [];
   const rest = [];
   let lastNumber = numbers[0];
@@ -201,6 +207,8 @@ function makeCompactRule(numbers: number[], threshold: number) {
       } else {
         const blockSize = lastNumber - firstInCluser;
         if (blockSize > threshold) {
+          bigblocks.push([firstInCluser, lastNumber]);
+        } else if (blockSize > 2) {
           blocks.push([firstInCluser, lastNumber]);
         } else {
           for (let i = firstInCluser; i <= lastNumber; i++) {
@@ -212,30 +220,60 @@ function makeCompactRule(numbers: number[], threshold: number) {
     }
     lastNumber = n;
   }
-  const blockExprs = blocks.map(([from, to]) => between(from, to));
 
-  if (rest.length && blockExprs.length) {
-    if (rest.length === 1) {
-      return or(equalTo(rest[0]), ...blockExprs);
+  const escape = (n: number) =>
+    ['"', "\u0000", "\u000e", "\u001f", "\t", "\n", "\r", "\u2028", "\u2029"]
+      .map(tcp).includes(n);
+  const fcp = (cp: number) => {
+    if (escape(cp)) {
+      return `\\u{${cp.toString(16)}}`;
+    } else {
+      return String.fromCodePoint(cp);
     }
-    return inSetOrBlock(rest, blockExprs);
-  } else if (rest.length) {
-    if (rest.length === 1) {
-      return `(v:number) => ${equalTo(rest[0])}`;
-    }
-    return inSet(rest);
-  } else {
-    return `(v:number) => ${or(...blockExprs)}`;
+  };
+  const tcp = (cp: string) => cp.codePointAt(0);
+  const blockString = `"${(blocks.map((b) => b.map(fcp).join("")).join(""))}"`;
+  const restStr = `"${rest.map(fcp).join("")}"`;
+
+  if (rest.length === 0 && blocks.length + bigblocks.length < 5) {
+    bigblocks.push(...blocks);
+    const betweens = bigblocks.map(([from, to]) => between(from, to));
+    return `(v: number) => ${or(...betweens)}`;
   }
+
+  const betweens = bigblocks.map(([from, to]) => between(from, to));
+  return `((s: Set<number>) => (v: number) => ${or(...betweens, "s.has(v)")})` +
+    `(strToSet(${restStr}, ${blockString}))`;
 }
 
-async function writeGraphemeSupport() {
+async function writeGraphemeSupport(fileName: string, threshold: number) {
   const properties = await parsePropertyFile("GraphemeBreakProperty.txt");
   const emoji = await parsePropertyFile("emoji-data.txt");
 
-  const { write, writeLn, close } = await FileWriter(
-    "grapheme-break-property.ts",
-  );
+  const { write, writeLn, close } = await FileWriter(fileName);
+
+  /*
+   * Code to decompress the unicode property data.
+   * See description further up
+   */
+  await writeLn(`
+  const cp = (s:string) => s.codePointAt(0)!;
+  const r = (a: number, b: number) => Array((b-a+1)).fill(0).map((_,i)=>i+a)
+  const strR = (rs: string) => {
+    const range = [];
+    const cps = [...rs];
+    for (let i = 0; i < cps.length; i+=2) {
+      range.push(r(cp(cps[i]), cp(cps[i+1])))
+    }
+    return range.flat();
+  }
+  const strToSet = (s: string, r: string) => {
+    return [...s].map(c => cp(c))
+    .concat(strR(r))
+    .reduce((s, c) => s.add(c), new Set<number>());
+  }
+
+  `.replace(/^[ ]{2}/mg, ""));
 
   await writeLn(`export const graphemeBreakProp = {`);
 
@@ -243,7 +281,6 @@ async function writeGraphemeSupport() {
 
   for (const [prop, values] of Object.entries(properties)) {
     // LVT is huge and has small predictable gaps
-    console.log(`working with '${prop}'`);
     const from = 0xAC00, to = 0xD7A3;
     const bigThresholds = [
       "Extend",
@@ -268,7 +305,6 @@ async function writeGraphemeSupport() {
         },`,
       );
     } else {
-      const threshold = bigThresholds.includes(prop) ? 100 : 20;
       await writeLn(`  is${prop}: ${makeCompactRule(values, threshold)},`);
     }
   }
@@ -277,19 +313,15 @@ async function writeGraphemeSupport() {
   );
   await writeLn(
     `  isExtendedPictographic: ${
-      makeCompactRule(emoji.ExtendedPictographic, 100)
+      makeCompactRule(emoji.ExtendedPictographic, threshold)
     },`,
   );
   await writeLn(`}`);
   await close();
 }
 
-async function writeLatinDecompositions() {
-  // example rows
-  //00C5;LATIN CAPITAL LETTER A WITH RING ABOVE;Lu;0;L;0041 030A;;;;N;LATIN CAPITAL LETTER A RING;;;00E5;
-  //00E5;LATIN SMALL LETTER A WITH RING ABOVE;Ll;0;L;0061 030A;;;;N;LATIN SMALL LETTER A RING;;00C5;;00C5
-
-  const { write, writeLn, close } = await FileWriter("decompositions.ts");
+async function writeLatinDecompositions(fileName: string) {
+  const { write, writeLn, close } = await FileWriter(fileName);
 
   const compositions: { [composed: string]: string } = {};
   const parseCodePoint = (p: string) => String.fromCodePoint(parseInt(p, 16));
@@ -339,22 +371,15 @@ if (import.meta.main) {
     );
   };
 
-  if (Deno.args.length > 0) {
-    const { flags, unknown } = parseFlags(Deno.args);
+  const { flags, unknown } = parseFlags(Deno.args);
+  if (unknown.length > 0) {
     if (flags.help) {
-      console.log(names);
-      console.log(
-        "exact, [from-to] (inclusive), /regex/, or nothing for <not-empty>",
-      );
-      console.log("The categories");
-      for (const [abbr, desc] of Object.entries(categories)) {
-        console.log(`${abbr}: ${desc}`);
-      }
+      printUsage();
     } else if (unknown.length === 1 && unknown[0] === "list") {
       console.log(flags);
       const criteria: Partial<Record<Names, (val: string) => boolean>> = {};
       for (const flag in flags) {
-        if (!names.includes(flag as Names)) {
+        if (!fieldNames.includes(flag as Names)) {
           throw `${flag} is not a field in UnicodeData.txt (use --help)`;
         }
         const val = flags[flag];
@@ -399,11 +424,57 @@ if (import.meta.main) {
         }
         console.log();
       }
+    } else if (unknown.length > 0 && unknown[0] === "create") {
+      const threshold = +flags.threshold ?? 500;
+      const files: Record<string, (f: string) => void> = {
+        "decompositions": (f: string) => writeLatinDecompositions(f),
+        "graphemes": (f: string) => writeGraphemeSupport(f, threshold),
+      };
+      const { entries, keys } = Object;
+      for (const [flag, value] of entries(flags)) {
+        if (flag === "threshold") continue;
+        if (!(flag in files)) {
+          console.log(`Unknown file to create: ${flag}.`);
+          console.log(`Available files are: ${keys(files).join(", ")}`);
+          continue;
+        }
+        const fileName = flags[flag];
+        if (fileName === true) {
+          throw `Must supply filename to --${flag}`;
+        }
+        await files[flag](fileName);
+        console.log(`wrote ${flag} to ${fileName}`);
+      }
+    } else {
+      console.log(`unknown command '${unknown[0]}'`);
+      printUsage();
     }
   } else {
-    //    showValuesCompact((await parsePropertyFile("GraphemeBreakProperty.txt")).Extend)
-    writeGraphemeSupport();
-    writeLatinDecompositions();
-    console.log("wrote combining-chars.ts and grapheme-break-property.ts");
+    printUsage();
   }
+}
+function printUsage() {
+  console.log(
+    `
+    usage: ucq [cmd] [flags] [files]
+
+    commands:
+
+      info <text> iterate over any graphemes of the text and print info about their code points
+
+      create [--decompositions [filename]] [--graphemes [filename]]
+        creates the .ts-files for decompositionsand graphemes respectively
+
+      list [--<field> [value]]+
+        search for a verbatim value --category "Mn", (see below for categories)
+        or a range of hex-values --code [1f601-1f620]
+        or a regex --name '/LATIN.*CAPITAL.* C /'
+
+    Available field names:
+    ${fieldNames.map((n) => `  - ${n}\n`).join("")}
+    Available categories:
+    ${Object.entries(categories).map(([c, d]) => `  -${c}: ${d}\n`).join("")}
+    `
+      .replace(/^[ ]{4}/mg, ""),
+  );
 }
