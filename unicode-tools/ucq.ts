@@ -21,11 +21,11 @@ async function list(
   return (await ucd()).map(name).filter(includeRow);
 }
 
-function inSourceDir(fileName: string) {
-  return fromFileUrl(join(dirname(import.meta.url), fileName));
+export function inDirUrl(fileName: string, dir:string = import.meta.url) {
+  return fromFileUrl(join(dirname(dir), fileName));
 }
 
-const FileWriter = async (fileName: string) => {
+export const FileWriter = async (fileName: string) => {
   const encoder = new TextEncoder();
   const openFile = await Deno.open(
     fileName,
@@ -110,7 +110,7 @@ function name(row: string[]): Record<Names, string> {
 }
 async function ucd() {
   if (!_ucd) {
-    const unicodeFile = inSourceDir("UnicodeData.txt");
+    const unicodeFile = inDirUrl("UnicodeData.txt");
     let fileData: string;
     try {
       fileData = await Deno.readTextFile(unicodeFile);
@@ -125,7 +125,7 @@ async function ucd() {
 }
 
 async function parsePropertyFile(fileName: string) {
-  const fileData = await Deno.readTextFile(inSourceDir(fileName));
+  const fileData = await Deno.readTextFile(inDirUrl(fileName));
 
   return fileData.split(/\r?\n/).filter((line) => !/^\s*(#.*)?$/.test(line) // remove comments and empty lines
   ).map((line) =>
@@ -292,7 +292,7 @@ async function writeGraphemeSupport(fileName: string, threshold: number) {
       );
       await writeLn(
         `  is${prop}: (v: number) => ${
-          and(between(from, to), `!((v-${hex(from)}) % 28)`)
+          and(between(from, to), `((v-${hex(from)}) % 28 !== 0)`)
         },`,
       );
     } else if (prop === "LV") {
@@ -301,7 +301,7 @@ async function writeGraphemeSupport(fileName: string, threshold: number) {
       );
       await writeLn(
         `  is${prop}: (v: number) => ${
-          and(between(from, to), `((v-${hex(from)}) % 28)`)
+          and(between(from, to), `((v-${hex(from)}) % 28 === 0)`)
         },`,
       );
     } else {

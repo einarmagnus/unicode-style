@@ -28,9 +28,9 @@ export const graphemeBreakProp = {
   isV: (v: number) => (v >= 0x1160 && v <= 0x11a7) || (v >= 0xd7b0 && v <= 0xd7c6),
   isT: (v: number) => (v >= 0x11a8 && v <= 0x11ff) || (v >= 0xd7cb && v <= 0xd7fb),
   // shorter (and faster!) than the whole table (399 entries)
-  isLV: (v: number) => (v >= 0xac00 && v <= 0xd7a3) && ((v-0xac00) % 28),
+  isLV: (v: number) => (v >= 0xac00 && v <= 0xd7a3) && ((v-0xac00) % 28 === 0),
   // shorter (and faster!) than the whole table (10773 entries)
-  isLVT: (v: number) => (v >= 0xac00 && v <= 0xd7a3) && !((v-0xac00) % 28),
+  isLVT: (v: number) => (v >= 0xac00 && v <= 0xd7a3) && ((v-0xac00) % 28 !== 0),
   isZWJ: (v:number) => (v === 0x200d),
   // from emoji-data.txt, needed for rule http://unicode.org/reports/tr29/#GB11
   isExtendedPictographic: ((s: Set<number>) => (v: number) => s.has(v))(strToSet("©®‼⁉™ℹ↩↪⌚⌛⌨⎈⏏⏸⏹⏺Ⓜ▪▫▶◀✔✖✝✡✨✳✴❄❇❌❎❓❔❕❗➕➖➗➡➰➿⤴⤵⬅⬆⬇⬛⬜⭐⭕〰〽㊗㊙🄍🄎🄏🄯🅾🅿🆎🈁🈂🈚🈯🉐🉑🩸🩹🩺🫀🫁🫂", "↔↙⏩⏳◻◾☀★☇☒☔⚅⚐✅✈✒❣❧🀀🃏🅬🅱🆑🆚🈲🈺🌀🏺🐀🔽🕆🙏🚀🛗🛠🛬🛰🛼🟠🟫🤌🤺🤼🥅🥇🥸🥺🧋🧍🧿🩰🩴🪀🪆🪐🪨🪰🪶🫐🫖")),

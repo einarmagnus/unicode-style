@@ -1,46 +1,57 @@
-import {countGraphemes, iterateGraphemes, substring} from "../unicode-tools/graphemes.ts";
+import {countGraphemes, iterateGraphemes, splitGraphemes, substring} from "../unicode-tools/graphemes.ts";
 import * as T from "https://deno.land/std/testing/asserts.ts";
+import { FileWriter, inDirUrl } from "../unicode-tools/ucq.ts";
+
 
 const hex = (n: number) => n.toString(16);
 const u = (ch: string) => ch.charCodeAt(0).toString(16);
 const U = (ch: string) => ch.codePointAt(0)?.toString(16);
 
+function equal<T>(arr1:Array<T>, arr2: Array<T>) {
+    if (!arr1.length || arr1.length !== arr2.length) return false;
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) return false;
+    }
+    return true;
+}
 
-Deno.test("runes", () => {
-    const splitRunes = (str: string) => Array.from(iterateGraphemes(str));
+Deno.test("graphemes", async () => {
+    const testFile = inDirUrl("GraphemeBreakTest.txt", import.meta.url);
+    const splitAt = "÷";
+    const dontSplitAt = "×";
+    const notEmpty = (str: string) => str?.length > 0;
+    const lines = (await Deno.readTextFile(testFile))
+        .match(/^[^#\t]+.*/gm)!;
+    const tests = lines.map(l =>
+        l.match(/^[^#\t]+/gm)![0]
+    );
 
-    T.assertEquals(splitRunes("abcd\u1100\u1161"), ["a", "b", "c", "d", "\u1100\u1161"]);
-    T.assertEquals(splitRunes("👩🏻‍🤝‍🧑🏻👩🏿‍🤝‍👩🏻👩🏾‍🤝‍👩🏻👩🏽‍🤝‍🧑🏿"), ["👩🏻‍🤝‍🧑🏻", "👩🏿‍🤝‍👩🏻", "👩🏾‍🤝‍👩🏻", "👩🏽‍🤝‍🧑🏿"]);
-    T.assertEquals(splitRunes(""), []);
-    T.assertEquals(splitRunes("hej ❤️ 𝐛a\u0308 👩🏿‍🤝‍👩🏻"), ["h", "e", "j", " ", "❤️", " ", "𝐛", "a\u0308", " ", "👩🏿‍🤝‍👩🏻"]);
-    T.assertEquals(splitRunes("𝐚̊𝐚̈𝐨̈"), ["𝐚̊", "𝐚̈", "𝐨̈"]);
-    T.assertEquals(splitRunes("\u030a\u030ao"), ["\u030a\u030a", "o"]);
-    T.assertEquals(splitRunes("o\u{e01ed}👩🏽‍🤝‍🧑🏿"), ["o\u{e01ed}", "👩🏽‍🤝‍🧑🏿"]);
-    T.assertEquals(splitRunes("🇸🇪🇮🇸 🇸🇪 🇮🇸"), ["🇸🇪", "🇮🇸", " ", "🇸🇪", " ", "🇮🇸"]);
-    T.assertEquals(splitRunes("🇸🇪🇮🇸 🇸🇪 🇸 🇪 🇮🇸"), ["🇸🇪", "🇮🇸", " ", "🇸🇪", " ", "🇸", " ", "🇪", " ", "🇮🇸"]);
+    const toString = (byteList:string) =>
+        byteList
+            .match(/[0-9A-F]+/g)
+            ?.map(b =>
+                String.fromCodePoint(parseInt(b, 16))
+            ).join("");
+    const input = tests.map(toString);
+
+
+    const result = tests.map(t =>
+         t.split(splitAt).filter(notEmpty).map(toString)
+    );
+    const runFrom = 390;
+    for (let i = runFrom; i < tests.length; i++) {
+        const gs = splitGraphemes(input[i]!);
+        if (!equal(gs, result[i])) {
+            console.log();
+            console.log(`test ${i}: failed\n\n'${lines[i]}'`);
+            console.log(`Should be`, result[i], result[i].map(s => [...s!].map(U)));
+            console.log(`was`, gs, gs.map(s => [...s].map(U)));
+            T.assert(false);
+        }
+    }
 });
 
-Deno.test("test perf", () => {
-    const str = Array(100).fill(
-        "Onece upona  time 😊🐶🐡🦿👨‍👨‍👧‍👧fsdfsa\u030Adfsdf👩‍👩‍👧👩🏾‍🤝‍👩🏾dsfsdfs\u030Afsdf👩🏾‍🤝‍👩🏻👩🏼‍🤝‍🧑🏽👩🏿‍🤝‍👩🏾ssdsdff👩🏽‍🤝‍🧑🏻👨🏻‍🤝‍👨🏻"
-    ).join("");
-    let total = 0;
-    console.time("mine");
-    for (let i = 0; i < 1000; i++) {
-        total += countGraphemes(str);
-    }
-    console.timeEnd("mine");
-    console.log("total:", total / 100000);
 
-    total = 0;
-    console.time("theirs")
-    for (let i = 0; i < 1000; i++) {
-        total += Array.from(str).length;
-    }
-    console.timeEnd("theirs");
-    console.log("total:", total / 100000);
-
-});
 
 Deno.test("substring", () => {
     T.assertEquals(substring("apa", 1), "pa");
