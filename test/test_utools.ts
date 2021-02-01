@@ -38,7 +38,8 @@ Deno.test("graphemes", async () => {
     const result = tests.map(t =>
          t.split(splitAt).filter(notEmpty).map(toString)
     );
-    const runFrom = 390;
+    const runFrom = 0;
+    if (runFrom)console.log("WARNING STARTING TESTS FROM", runFrom);
     for (let i = runFrom; i < tests.length; i++) {
         const gs = splitGraphemes(input[i]!);
         if (!equal(gs, result[i])) {

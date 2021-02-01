@@ -19,7 +19,6 @@ export function countGraphemes(string: string) {
   return len;
 }
 
-// these can maybe be sped up with some tricks
 const {
   isControl,
   isExtend,
@@ -43,72 +42,106 @@ const {
  * @param i the position to start at
  */
 const getGraphemeWidth = (str: string, i: number): number => {
-  if (i >= str.length) return i;
+  if (i >= str.length) return 0;
   let cur = str.codePointAt(i)!;
   let width = codePointWidth(cur);
   let next = str.codePointAt(i + width)!;
-  let prev: number | undefined = undefined;
   let inEmojiSeq = false;
-  const hex = (n: number | undefined) => `0x${n?.toString(16) ?? "??"}`;
-  const u = (n: number) => String.fromCodePoint(n);
-  let breakHere: boolean | undefined = undefined;
+  let breakHere = true;
   let regionalIndictors = 0;
 
+  // shortcut for ascii
+  if (!(cur & 0xff80) && !(next & 0xff80) && cur !== 0xd) {
+    return 1;
+  }
   while (next) {
-
-    // http://unicode.org/reports/tr29/#GB3
-    // Do not break between a CR and LF. Otherwise, break before and after controls.
-    // GB3 	CR 	× 	LF
-    // GB4 	(Control | CR | LF) 	÷
-    // GB5 		÷ 	(Control | CR | LF)
-    if (isControl(cur) || isCR(cur) || isLF(cur) || isControl(next) || isCR(next) || isLF(next)) {
-      if (isCR(cur) && isLF(next)) {
-        breakHere ??= false;
+    // loop only for being able to break, i.e. jump forward as soon as
+    // a rule is triggered.
+    while (true) {
+      // http://unicode.org/reports/tr29/#GB3
+      // Do not break between a CR and LF. Otherwise, break before and after controls.
+      // GB3 	CR 	× 	LF
+      // GB4 	(Control | CR | LF) 	÷
+      // GB5 		÷ 	(Control | CR | LF)
+      if (
+        isControl(cur) || isCR(cur) || isLF(cur) || isControl(next) ||
+        isCR(next) || isLF(next)
+      ) {
+        if (isCR(cur) && isLF(next)) {
+          breakHere = false;
+          break;
+        }
+        return width;
       }
-      breakHere ??= true;
+
+      // http://unicode.org/reports/tr29/#GB6
+      // Do not break Hangul syllable sequences.
+      // GB6 	L 	× 	(L | V | LV | LVT)
+      if (
+        isL(cur) && (isL(next) || isV(next) || isLV(next) || isLVT(next))
+      ) {
+        breakHere = false;
+        break;
+      }
+
+      // GB7 	(LV | V) 	× 	(V | T)
+      if ((isLV(cur) || isV(cur)) && (isV(next) || isT(next))) {
+        breakHere = false;
+        break;
+      }
+      // GB8 	(LVT | T) 	× 	T
+      if ((isLVT(cur) || isT(cur)) && isT(next)) {
+        breakHere = false;
+        break;
+      }
+
+      // Do not break before extending characters or ZWJ.
+      // GB9 	  	× 	(Extend | ZWJ)
+      if (isZWJ(next) || isExtend(next)) {
+        breakHere = false;
+        break;
+      }
+      // Do not break before SpacingMarks, or after Prepend characters.
+      // GB9a 	  	× 	SpacingMark
+      if (isSpacingMark(next)) {
+        breakHere = false;
+        break;
+      }
+      // GB9b 	Prepend 	×
+      if (isPrepend(cur)) {
+        breakHere = false;
+        break;
+      }
+
+      // Do not break within emoji flag sequences. That is, do not break
+      // between regional indicator (RI) symbols if there is an odd number
+      // of RI characters before the break point.
+      // GB12 	sot (RI RI)* RI 	× 	RI
+      // GB13 	[^RI] (RI RI)* RI 	× 	RI
+      if (isRegionalIndicator(cur)) {
+        regionalIndictors++;
+        if (isRegionalIndicator(next) && regionalIndictors % 2 === 1) {
+          breakHere = false;
+          break;
+        }
+      } else {
+        regionalIndictors = 0;
+      }
+
+      // Otherwise, break everywhere.
+      // GB999 	Any 	÷ 	Any
+      break;
     }
 
-
-    // http://unicode.org/reports/tr29/#GB6
-    // Do not break Hangul syllable sequences.
-    // GB6 	L 	× 	(L | V | LV | LVT)
-    if (
-      isL(cur) && (isL(next) || isV(next) || isLV(next) || isLVT(next))
-    ) {
-      breakHere ??= false;
-    }
-
-
-    // GB7 	(LV | V) 	× 	(V | T)
-    if ((isLV(cur) || isV(cur)) && (isV(next) || isT(next))) {
-      breakHere ??= false;
-    }
-    // GB8 	(LVT | T) 	× 	T
-    if ((isLVT(cur) || isT(cur)) && isT(next)) {
-      breakHere ??= false;
-    }
-
-
-    // Do not break before extending characters or ZWJ.
-    // GB9 	  	× 	(Extend | ZWJ)
-    if (isZWJ(next) || isExtend(next)) {
-      breakHere ??= false;
-    }
-    // Do not break before SpacingMarks, or after Prepend characters.
-    // GB9a 	  	× 	SpacingMark
-    if (isSpacingMark(next)) {
-      breakHere ??= false;
-    }
-    // GB9b 	Prepend 	×
-    if (isPrepend(cur)) {
-      breakHere ??= false;
-    }
+    // regardless of whether a rule was triggered or not, the
+    // emoji-sequence rules need to be checked, so they are outside
+    // the jump-forward lood
 
     // Do not break within emoji modifier sequences or emoji zwj sequences.
     // GB11 	\p{Extended_Pictographic} Extend* ZWJ 	× 	\p{Extended_Pictographic}
     if (inEmojiSeq) {
       if (isZWJ(cur) && isExtendedPictographic(next)) {
-        breakHere ??= false;
+        breakHere = false;
       }
       if (!isExtend(cur) || isZWJ(cur)) {
         inEmojiSeq = false;
@@ -119,29 +152,12 @@ const getGraphemeWidth = (str: string, i: number): number => {
         inEmojiSeq = true;
       }
     }
-    // Do not break within emoji flag sequences. That is, do not break
-    // between regional indicator (RI) symbols if there is an odd number
-    // of RI characters before the break point.
-    // GB12 	sot (RI RI)* RI 	× 	RI
-    // GB13 	[^RI] (RI RI)* RI 	× 	RI
-    if (isRegionalIndicator(cur)) {
-      regionalIndictors++;
-      if (isRegionalIndicator(next) && regionalIndictors % 2 === 1) {
-        breakHere ??= false;
-      }
-    } else {
-      regionalIndictors = 0;
-    }
-
-    // Otherwise, break everywhere.
-    // GB999 	Any 	÷ 	Any
-    if (breakHere !== false) {
+    if (breakHere) {
       return width;
     }
 
     // didn't break, update values and continue with next codePoint
-    breakHere = undefined;
-    prev = cur;
+    breakHere = true;
     cur = next;
     width += codePointWidth(cur);
     next = str.codePointAt(i + width)!;
@@ -170,8 +186,7 @@ export function* iterateGraphemes(string: string) {
   let runeWidth = 1;
   do {
     runeWidth = getGraphemeWidth(string, runeStart);
-    const rune = string.substr(runeStart, runeWidth);
-    yield rune;
+    yield string.substr(runeStart, runeWidth);
     runeStart += runeWidth;
   } while (runeStart < string.length);
 }
