@@ -1,4 +1,4 @@
-const allTextStyles2 = [
+const allTextStyles1 = [
     "ASCII",
     "BOLD",
     "ITALIC",
@@ -12,7 +12,7 @@ const allTextStyles2 = [
     "BOLD SCRIPT",
     "FRAKTUR",
     "BOLD FRAKTUR",
-    "DOUBLE-STRUCK", 
+    "DOUBLE-STRUCK",
 ];
 const alphabets = {
     "ASCII": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
@@ -24,7 +24,7 @@ const alphabets = {
     "SANS-SERIF ITALIC": "𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫",
     "SANS-SERIF BOLD ITALIC": "𝘼𝘽𝘾𝘿𝙀𝙁𝙂𝙃𝙄𝙅𝙆𝙇𝙈𝙉𝙊𝙋𝙌𝙍𝙎𝙏𝙐𝙑𝙒𝙓𝙔𝙕𝙖𝙗𝙘𝙙𝙚𝙛𝙜𝙝𝙞𝙟𝙠𝙡𝙢𝙣𝙤𝙥𝙦𝙧𝙨𝙩𝙪𝙫𝙬𝙭𝙮𝙯𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵",
     "MONOSPACE": "𝙰𝙱𝙲𝙳𝙴𝙵𝙶𝙷𝙸𝙹𝙺𝙻𝙼𝙽𝙾𝙿𝚀𝚁𝚂𝚃𝚄𝚅𝚆𝚇𝚈𝚉𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿",
-    "SCRIPT": "𝒜ℬ𝒞𝒟ℰℱ𝒢ℋℐ𝒥𝒦ℒℳ𝒩𝒪𝒫𝒬ℛ𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵𝒶𝒷𝒸𝒹ℯ𝒻ℊ𝒽𝒾𝒿𝓀𝓁𝓂𝓃ℯ𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫",
+    "SCRIPT": "𝒜ℬ𝒞𝒟ℰℱ𝒢ℋℐ𝒥𝒦ℒℳ𝒩𝒪𝒫𝒬ℛ𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵𝒶𝒷𝒸𝒹ℯ𝒻ℊ𝒽𝒾𝒿𝓀𝓁𝓂𝓃ℴ𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫",
     "BOLD SCRIPT": "𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃𝟎𝟏𝟐𝟑𝟒𝟓𝟔𝟕𝟖𝟗",
     "FRAKTUR": "𝔄𝔅ℭ𝔇𝔈𝔉𝔊ℌℑ𝔍𝔎𝔏𝔐𝔑𝔒𝔓𝔔ℜ𝔖𝔗𝔘𝔙𝔚𝔛𝔜ℨ𝔞𝔟𝔠𝔡𝔢𝔣𝔤𝔥𝔦𝔧𝔨𝔩𝔪𝔫𝔬𝔭𝔮𝔯𝔰𝔱𝔲𝔳𝔴𝔵𝔶𝔷𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡",
     "BOLD FRAKTUR": "𝕬𝕭𝕮𝕯𝕰𝕱𝕲𝕳𝕴𝕵𝕶𝕷𝕸𝕹𝕺𝕻𝕼𝕽𝕾𝕿𝖀𝖁𝖂𝖃𝖄𝖅𝖆𝖇𝖈𝖉𝖊𝖋𝖌𝖍𝖎𝖏𝖐𝖑𝖒𝖓𝖔𝖕𝖖𝖗𝖘𝖙𝖚𝖛𝖜𝖝𝖞𝖟𝟎𝟏𝟐𝟑𝟒𝟓𝟔𝟕𝟖𝟗",
@@ -525,6 +525,64 @@ const decompositionMap = {
 const decomposeChars = (text)=>text.replace(/./g, (ch)=>decompositionMap[ch] || ch
     )
 ;
+const decomposeChars1 = decomposeChars;
+let min = Infinity, max = 0;
+function makeCompositionMap() {
+    const recMap = {
+    };
+    for (const [c, d] of Object.entries(decompositionMap)){
+        const [d1, d2] = d;
+        recMap[d2] ??= {
+        };
+        recMap[d2][d1] = c;
+        const cNum = c.charCodeAt(0);
+        if (cNum < min) {
+            min = cNum;
+        }
+        if (cNum > max) {
+            max = cNum;
+        }
+    }
+    return recMap;
+}
+function monkeyPatchNormalize() {
+    if ("ä".normalize("NFD").length === 2) {
+        return;
+    }
+    const compositionMap = makeCompositionMap();
+    const origNormalize = String.prototype.normalize;
+    String.prototype.normalize = function(form) {
+        if (form === "NFC") {
+            return composeChars(this, compositionMap);
+        } else if (form === "NFD") {
+            return decomposeChars1(this);
+        } else {
+            return origNormalize.apply(this, [
+                form
+            ]);
+        }
+    };
+}
+function composeChars(text, compositionMap) {
+    const result = [];
+    let lastIndex = 0;
+    const combiningChars = Object.keys(compositionMap);
+    for(let i = 1; i < text.length; i++){
+        const ch = text.charCodeAt(i);
+        if (ch < min || ch > max) continue;
+        for (const comChar of combiningChars){
+            if (comChar === text[i]) {
+                const composed = compositionMap[comChar][text[i - 1]];
+                if (composed) {
+                    result.push(text.substring(lastIndex, i - 1), composed);
+                    lastIndex = i + 1;
+                }
+            }
+        }
+    }
+    result.push(text.substring(lastIndex));
+    return result.join("");
+}
 const styleElements = [
     "ascii",
     "sans-serif",
@@ -533,7 +591,7 @@ const styleElements = [
     "fraktur",
     "monospace",
     "script",
-    "double-struck", 
+    "double-struck",
 ];
 const styleShortOptions = {
     "a": "ascii",
@@ -552,7 +610,7 @@ function validateLongFlag(opt) {
         throw `'--${opt}' is not a valid style`;
     }
 }
-function translateShortFlags2(opts) {
+function translateShortFlags1(opts) {
     const styles = [];
     for (const opt of opts){
         if (styleShortOptions[opt]) {
@@ -563,26 +621,24 @@ function translateShortFlags2(opts) {
     }
     return styles;
 }
-function composeStyles2(styles) {
+function composeStyles1(styles) {
     styles.sort((el1, el2)=>styleElements.indexOf(el1) - styleElements.indexOf(el2)
     );
     const styleName = styles.join(" ").toUpperCase();
-    if (allTextStyles2.includes(styleName)) {
+    if (allTextStyles1.includes(styleName)) {
         return styleName;
     } else {
         throw `There is no ${styleName} available in unicode`;
     }
 }
-const allTextStyles1 = allTextStyles2;
-const composeStyles1 = composeStyles2;
-const translateShortFlags1 = translateShortFlags2;
 export { allTextStyles1 as allTextStyles, composeStyles1 as composeStyles, translateShortFlags1 as translateShortFlags };
+monkeyPatchNormalize();
 const erasor = {
 };
 function makeCharMap(alphabets1) {
     const styles = new Map();
     const ascii = alphabets1["ASCII"];
-    for (const styleName of allTextStyles2){
+    for (const styleName of allTextStyles1){
         const alphabet = alphabets1[styleName];
         styles.set(styleName, Array.from(alphabet).reduce((map, __char, i)=>{
             map[ascii[i]] = __char;
@@ -593,17 +649,19 @@ function makeCharMap(alphabets1) {
     }
     return styles;
 }
-export const styleCharMap = makeCharMap(alphabets);
-export function unstyle(text) {
+const styleCharMap1 = makeCharMap(alphabets);
+export { styleCharMap1 as styleCharMap };
+function unstyle1(text) {
     const result = [];
     for (const __char of text){
         result.push(erasor[__char] ?? __char);
     }
     return result.join("").normalize();
 }
-export function style(text, style1) {
-    text = decomposeChars(text);
-    const alphabet = styleCharMap.get(style1);
+export { unstyle1 as unstyle };
+function style1(text, style1) {
+    text = text.normalize("NFD");
+    const alphabet = styleCharMap1.get(style1);
     if (!alphabet) {
         throw new Error(`No style '${style1}' found`);
     }
@@ -613,17 +671,19 @@ export function style(text, style1) {
         result.push(alphabet[__char] || __char);
     }
     const r = result.join("");
-    return r.normalize();
+    return r.normalize("NFC");
 }
+export { style1 as style };
 const literalRegex = /{([bicsfdm]+) ([^}]*)}/g;
-const flagsToStyle = (flags)=>composeStyles2(translateShortFlags2(flags))
+const flagsToStyle = (flags)=>composeStyles1(translateShortFlags1(flags))
 ;
-export function parseTemplate(template) {
+function parseTemplate1(template) {
     return template.replace(literalRegex, (all, flags, text)=>{
         try {
-            return style(text, flagsToStyle(flags));
+            return style1(text, flagsToStyle(flags));
         } catch (e) {
             return all;
         }
     });
 }
+export { parseTemplate1 as parseTemplate };
