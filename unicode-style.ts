@@ -11,12 +11,12 @@ monkeyPatchNormalize();
 type Alphabet = { [index: string]: string };
 const erasor: Alphabet = {};
 
-function makeCharMap(alphabets: Record<TextStyle, string>): Map<TextStyle, Alphabet> {
+function makeCharMap(alphabets: Record<TextStyle, string[]>): Map<TextStyle, Alphabet> {
   const styles = new Map<TextStyle, Alphabet>();
   const ascii = alphabets["ASCII"];
   for (const styleName of allTextStyles) {
     const alphabet = alphabets[styleName];
-    styles.set(styleName, Array.from(alphabet).reduce((map: Alphabet, char, i)=> {
+    styles.set(styleName, alphabet.reduce((map: Alphabet, char, i)=> {
         map[ascii[i]] = char;
         erasor[char] = ascii[i];
         return map;
@@ -51,7 +51,7 @@ export function style(text: string, style: TextStyle): string {
   return r.normalize("NFC");
 }
 
-const literalRegex = /{([bicsfdm-]+) ([^}]*)}/g;
+const literalRegex = /{([bicsfdm=-]+) ([^}]*)}/g;
 const flagsToStyle = (flags: string) =>
   composeStyles(translateShortFlags(flags));
 /** Use the syntax of chalk */
