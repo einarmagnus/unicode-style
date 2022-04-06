@@ -15,7 +15,7 @@ export const styleElements = [
 type Style = typeof styleElements[number];
 
 const styleShortOptions: Record<string, Style> = {
-  "a": "ascii",
+  "-": "ascii",
   "b": "bold",
   "i": "italic",
   "c": "script",

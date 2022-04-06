@@ -1,4 +1,8 @@
-const allTextStyles1 = [
+// deno-fmt-ignore-file
+// deno-lint-ignore-file
+// This code was bundled using `deno bundle` and it's not recommended to edit it manually
+
+const allTextStyles = [
     "ASCII",
     "BOLD",
     "ITALIC",
@@ -12,7 +16,7 @@ const allTextStyles1 = [
     "BOLD SCRIPT",
     "FRAKTUR",
     "BOLD FRAKTUR",
-    "DOUBLE-STRUCK",
+    "DOUBLE-STRUCK", 
 ];
 const alphabets = {
     "ASCII": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
@@ -525,15 +529,12 @@ const decompositionMap = {
 const decomposeChars = (text)=>text.replace(/./g, (ch)=>decompositionMap[ch] || ch
     )
 ;
-const decomposeChars1 = decomposeChars;
 let min = Infinity, max = 0;
 function makeCompositionMap() {
-    const recMap = {
-    };
+    const recMap = {};
     for (const [c, d] of Object.entries(decompositionMap)){
         const [d1, d2] = d;
-        recMap[d2] ??= {
-        };
+        recMap[d2] ??= {};
         recMap[d2][d1] = c;
         const cNum = c.charCodeAt(0);
         if (cNum < min) {
@@ -555,7 +556,7 @@ function monkeyPatchNormalize() {
         if (form === "NFC") {
             return composeChars(this, compositionMap);
         } else if (form === "NFD") {
-            return decomposeChars1(this);
+            return decomposeChars(this);
         } else {
             return origNormalize.apply(this, [
                 form
@@ -591,10 +592,10 @@ const styleElements = [
     "fraktur",
     "monospace",
     "script",
-    "double-struck",
+    "double-struck", 
 ];
 const styleShortOptions = {
-    "a": "ascii",
+    "-": "ascii",
     "b": "bold",
     "i": "italic",
     "c": "script",
@@ -603,14 +604,7 @@ const styleShortOptions = {
     "s": "sans-serif",
     "m": "monospace"
 };
-function validateLongFlag(opt) {
-    if (styleElements.includes(opt)) {
-        return opt;
-    } else {
-        throw `'--${opt}' is not a valid style`;
-    }
-}
-function translateShortFlags1(opts) {
+function translateShortFlags(opts) {
     const styles = [];
     for (const opt of opts){
         if (styleShortOptions[opt]) {
@@ -621,47 +615,43 @@ function translateShortFlags1(opts) {
     }
     return styles;
 }
-function composeStyles1(styles) {
+function composeStyles(styles) {
     styles.sort((el1, el2)=>styleElements.indexOf(el1) - styleElements.indexOf(el2)
     );
     const styleName = styles.join(" ").toUpperCase();
-    if (allTextStyles1.includes(styleName)) {
+    if (allTextStyles.includes(styleName)) {
         return styleName;
     } else {
         throw `There is no ${styleName} available in unicode`;
     }
 }
-export { allTextStyles1 as allTextStyles, composeStyles1 as composeStyles, translateShortFlags1 as translateShortFlags };
+export { allTextStyles as allTextStyles, composeStyles as composeStyles, translateShortFlags as translateShortFlags };
 monkeyPatchNormalize();
-const erasor = {
-};
+const erasor = {};
 function makeCharMap(alphabets1) {
     const styles = new Map();
     const ascii = alphabets1["ASCII"];
-    for (const styleName of allTextStyles1){
+    for (const styleName of allTextStyles){
         const alphabet = alphabets1[styleName];
         styles.set(styleName, Array.from(alphabet).reduce((map, __char, i)=>{
             map[ascii[i]] = __char;
             erasor[__char] = ascii[i];
             return map;
-        }, {
-        }));
+        }, {}));
     }
     return styles;
 }
-const styleCharMap1 = makeCharMap(alphabets);
-export { styleCharMap1 as styleCharMap };
-function unstyle1(text) {
+const styleCharMap = makeCharMap(alphabets);
+function unstyle(text) {
     const result = [];
     for (const __char of text){
         result.push(erasor[__char] ?? __char);
     }
     return result.join("").normalize();
 }
-export { unstyle1 as unstyle };
-function style1(text, style1) {
+function style(text, style1) {
     text = text.normalize("NFD");
-    const alphabet = styleCharMap1.get(style1);
+    const alphabet = styleCharMap.get(style1);
     if (!alphabet) {
         throw new Error(`No style '${style1}' found`);
     }
@@ -673,17 +663,20 @@ function style1(text, style1) {
     const r = result.join("");
     return r.normalize("NFC");
 }
-export { style1 as style };
-const literalRegex = /{([bicsfdm]+) ([^}]*)}/g;
-const flagsToStyle = (flags)=>composeStyles1(translateShortFlags1(flags))
+const literalRegex = /{([bicsfdm-]+) ([^}]*)}/g;
+const flagsToStyle = (flags)=>composeStyles(translateShortFlags(flags))
 ;
-function parseTemplate1(template) {
+function parseTemplate(template) {
     return template.replace(literalRegex, (all, flags, text)=>{
         try {
-            return style1(text, flagsToStyle(flags));
+            return style(text, flagsToStyle(flags));
         } catch (e) {
             return all;
         }
     });
 }
-export { parseTemplate1 as parseTemplate };
+export { styleCharMap as styleCharMap };
+export { unstyle as unstyle };
+export { style as style };
+export { parseTemplate as parseTemplate };
+

@@ -51,7 +51,7 @@ export function style(text: string, style: TextStyle): string {
   return r.normalize("NFC");
 }
 
-const literalRegex = /{([bicsfdm]+) ([^}]*)}/g;
+const literalRegex = /{([bicsfdm-]+) ([^}]*)}/g;
 const flagsToStyle = (flags: string) =>
   composeStyles(translateShortFlags(flags));
 /** Use the syntax of chalk */
