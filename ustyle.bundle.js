@@ -30,7 +30,35 @@ const allTextStyles = [
     "BOLD SCRIPT STRUCK-THROUGH",
     "FRAKTUR STRUCK-THROUGH",
     "BOLD FRAKTUR STRUCK-THROUGH",
-    "DOUBLE-STRUCK STRUCK-THROUGH", 
+    "DOUBLE-STRUCK STRUCK-THROUGH",
+    "UNDERLINED",
+    "BOLD UNDERLINED",
+    "ITALIC UNDERLINED",
+    "BOLD ITALIC UNDERLINED",
+    "SANS-SERIF UNDERLINED",
+    "SANS-SERIF BOLD UNDERLINED",
+    "SANS-SERIF ITALIC UNDERLINED",
+    "SANS-SERIF BOLD ITALIC UNDERLINED",
+    "MONOSPACE UNDERLINED",
+    "SCRIPT UNDERLINED",
+    "BOLD SCRIPT UNDERLINED",
+    "FRAKTUR UNDERLINED",
+    "BOLD FRAKTUR UNDERLINED",
+    "DOUBLE-STRUCK UNDERLINED",
+    "STRUCK-THROUGH UNDERLINED",
+    "BOLD STRUCK-THROUGH UNDERLINED",
+    "ITALIC STRUCK-THROUGH UNDERLINED",
+    "BOLD ITALIC STRUCK-THROUGH UNDERLINED",
+    "SANS-SERIF STRUCK-THROUGH UNDERLINED",
+    "SANS-SERIF BOLD STRUCK-THROUGH UNDERLINED",
+    "SANS-SERIF ITALIC STRUCK-THROUGH UNDERLINED",
+    "SANS-SERIF BOLD ITALIC STRUCK-THROUGH UNDERLINED",
+    "MONOSPACE STRUCK-THROUGH UNDERLINED",
+    "SCRIPT STRUCK-THROUGH UNDERLINED",
+    "BOLD SCRIPT STRUCK-THROUGH UNDERLINED",
+    "FRAKTUR STRUCK-THROUGH UNDERLINED",
+    "BOLD FRAKTUR STRUCK-THROUGH UNDERLINED",
+    "DOUBLE-STRUCK STRUCK-THROUGH UNDERLINED", 
 ];
 const alphabets = {
     "ASCII": Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
@@ -60,15 +88,48 @@ const alphabets = {
     "BOLD SCRIPT STRUCK-THROUGH": [],
     "FRAKTUR STRUCK-THROUGH": [],
     "BOLD FRAKTUR STRUCK-THROUGH": [],
-    "DOUBLE-STRUCK STRUCK-THROUGH": []
+    "DOUBLE-STRUCK STRUCK-THROUGH": [],
+    "UNDERLINED": [],
+    "BOLD UNDERLINED": [],
+    "ITALIC UNDERLINED": [],
+    "BOLD ITALIC UNDERLINED": [],
+    "SANS-SERIF UNDERLINED": [],
+    "SANS-SERIF BOLD UNDERLINED": [],
+    "SANS-SERIF ITALIC UNDERLINED": [],
+    "SANS-SERIF BOLD ITALIC UNDERLINED": [],
+    "MONOSPACE UNDERLINED": [],
+    "SCRIPT UNDERLINED": [],
+    "BOLD SCRIPT UNDERLINED": [],
+    "FRAKTUR UNDERLINED": [],
+    "BOLD FRAKTUR UNDERLINED": [],
+    "DOUBLE-STRUCK UNDERLINED": [],
+    "STRUCK-THROUGH UNDERLINED": [],
+    "BOLD STRUCK-THROUGH UNDERLINED": [],
+    "ITALIC STRUCK-THROUGH UNDERLINED": [],
+    "BOLD ITALIC STRUCK-THROUGH UNDERLINED": [],
+    "SANS-SERIF STRUCK-THROUGH UNDERLINED": [],
+    "SANS-SERIF BOLD STRUCK-THROUGH UNDERLINED": [],
+    "SANS-SERIF ITALIC STRUCK-THROUGH UNDERLINED": [],
+    "SANS-SERIF BOLD ITALIC STRUCK-THROUGH UNDERLINED": [],
+    "MONOSPACE STRUCK-THROUGH UNDERLINED": [],
+    "SCRIPT STRUCK-THROUGH UNDERLINED": [],
+    "BOLD SCRIPT STRUCK-THROUGH UNDERLINED": [],
+    "FRAKTUR STRUCK-THROUGH UNDERLINED": [],
+    "BOLD FRAKTUR STRUCK-THROUGH UNDERLINED": [],
+    "DOUBLE-STRUCK STRUCK-THROUGH UNDERLINED": []
 };
 const decorate = (alphabet, __char)=>alphabet.map((ch)=>`${ch}${__char}`
     )
 ;
-Object.keys(alphabets).filter((style1)=>!/STRUCK/.test(style1)
+Object.keys(alphabets).filter((style1)=>!/STRUCK-THROUGH/.test(style1)
 ).forEach((style2)=>{
     const decoratedStyle = style2 === "ASCII" ? "STRUCK-THROUGH" : `${style2} STRUCK-THROUGH`;
     alphabets[decoratedStyle] = decorate(alphabets[style2], "\u0336");
+});
+Object.keys(alphabets).filter((style3)=>!/UNDERLINED/.test(style3)
+).forEach((style4)=>{
+    const decoratedStyle = style4 === "ASCII" ? "UNDERLINED" : `${style4} UNDERLINED`;
+    alphabets[decoratedStyle] = decorate(alphabets[style4], "\u0332");
 });
 const decompositionMap = {
     "À": "À",
@@ -629,7 +690,8 @@ const styleElements = [
     "monospace",
     "script",
     "double-struck",
-    "struck-through"
+    "struck-through",
+    "underlined"
 ];
 const styleShortOptions = {
     "=": "ascii",
@@ -640,7 +702,8 @@ const styleShortOptions = {
     "d": "double-struck",
     "s": "sans-serif",
     "m": "monospace",
-    "-": "struck-through"
+    "-": "struck-through",
+    "_": "underlined"
 };
 function translateShortFlags(opts) {
     const styles = [];
@@ -701,7 +764,7 @@ function style(text, style1) {
     const r = result.join("");
     return r.normalize("NFC");
 }
-const literalRegex = /{([bicsfdm=-]+) ([^}]*)}/g;
+const literalRegex = /{([bicsfdm=_-]+) ([^}]*)}/g;
 const flagsToStyle = (flags)=>composeStyles(translateShortFlags(flags))
 ;
 function parseTemplate(template) {

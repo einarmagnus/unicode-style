@@ -10,7 +10,8 @@ export const styleElements = [
   "monospace",
   "script",
   "double-struck",
-  "struck-through"
+  "struck-through",
+  "underlined"
 ] as const;
 
 type Style = typeof styleElements[number];
@@ -24,7 +25,8 @@ const styleShortOptions: Record<string, Style> = {
   "d": "double-struck",
   "s": "sans-serif",
   "m": "monospace",
-  "-": "struck-through"
+  "-": "struck-through",
+  "_": "underlined"
 };
 
 export function flagsToStyle(opts: string[]): TextStyle {

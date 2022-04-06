@@ -5,7 +5,7 @@ import { composeStyles, translateShortFlags } from "./flags-to-styles.ts";
 export type { TextStyle };
 export { allTextStyles, composeStyles, translateShortFlags };
 
-// path String.normalize for Deno (only for latin chars)
+// patch String.normalize for Deno (only for latin chars)
 monkeyPatchNormalize();
 
 type Alphabet = { [index: string]: string };
@@ -51,7 +51,7 @@ export function style(text: string, style: TextStyle): string {
   return r.normalize("NFC");
 }
 
-const literalRegex = /{([bicsfdm=-]+) ([^}]*)}/g;
+const literalRegex = /{([bicsfdm=_-]+) ([^}]*)}/g;
 const flagsToStyle = (flags: string) =>
   composeStyles(translateShortFlags(flags));
 /** Use the syntax of chalk */
