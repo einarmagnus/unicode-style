@@ -1,9 +1,9 @@
-import { parseFlags } from "https://deno.land/x/cliffy@v0.16.0/flags/mod.ts";
+import { parseFlags } from "@cliffy/flags";
 import {
   dirname,
   fromFileUrl,
   join,
-} from "https://deno.land/std@0.83.0/path/mod.ts";
+} from "@std/path";
 import { iterateGraphemes } from "./graphemes.ts";
 
 /**
@@ -425,7 +425,7 @@ if (import.meta.main) {
         console.log();
       }
     } else if (unknown.length > 0 && unknown[0] === "create") {
-      const threshold = +flags.threshold ?? 500;
+      const threshold = +(flags.threshold ?? 500);
       const files: Record<string, (f: string) => void> = {
         "decompositions": (f: string) => writeLatinDecompositions(f),
         "graphemes": (f: string) => writeGraphemeSupport(f, threshold),

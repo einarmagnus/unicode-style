@@ -1,5 +1,5 @@
 import {countGraphemes, iterateGraphemes, splitGraphemes, substring} from "../unicode-tools/graphemes.ts";
-import * as T from "https://deno.land/std/testing/asserts.ts";
+import * as T from "@std/assert";
 import { FileWriter, inDirUrl } from "../unicode-tools/ucq.ts";
 
 

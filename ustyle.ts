@@ -1,4 +1,4 @@
-import {dedent} from "https://raw.githubusercontent.com/tamino-martinius/node-ts-dedent/master/src/index.ts";
+import {dedent} from "ts-dedent";
 
 import {
   allTextStyles,
@@ -7,7 +7,7 @@ import {
   TextStyle,
   unstyle,
 } from "./mod.ts";
-import * as Colors from "https://deno.land/std@0.74.0/fmt/colors.ts";
+import * as Colors from "@std/fmt/colors";
 import { flagsToStyle, styleElements } from "./flags-to-styles.ts";
 
 export async function main() {
@@ -32,7 +32,7 @@ export async function main() {
   } else if (hasFlag("--clean")) {
     let text = getFlagArg("--clean");
     if (text === "-") {
-      text = new TextDecoder().decode(await Deno.readAll(Deno.stdin));
+      text = await new Response(Deno.stdin.readable).text();
     } else if (!text) {
       console.log("Error: --clean requires an argument");
       return;
@@ -41,7 +41,7 @@ export async function main() {
   } else if (hasFlag("--template")) {
     let template = getFlagArg("--template");
     if (template === "-") {
-      template = new TextDecoder().decode(await Deno.readAll(Deno.stdin));
+      template = await new Response(Deno.stdin.readable).text();
     } else if (!template) {
       console.log("Error: --template requires an argument");
       return;

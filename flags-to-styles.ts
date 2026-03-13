@@ -33,9 +33,9 @@ export function flagsToStyle(opts: string[]): TextStyle {
   const styles: Style[] = [];
   for (const opt of opts) {
     if (opt.startsWith("--")) {
-      styles.push(validateLongFlag(opt.substr(2)));
+      styles.push(validateLongFlag(opt.substring(2)));
     } else {
-      styles.push(...translateShortFlags(opt.substr(1)));
+      styles.push(...translateShortFlags(opt.substring(1)));
     }
   }
   return composeStyles(styles);
